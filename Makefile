@@ -15,3 +15,6 @@ run:
 notebook:
 	# Run jupyter notebooks.
 	POSTGRES_HOST=localhost PYTHONPATH=$(shell pwd) JUPYTER_PATH=$(shell pwd) poetry run jupyter notebook --ip 0.0.0.0
+
+bash:
+	docker compose run --rm --service-ports server bash
