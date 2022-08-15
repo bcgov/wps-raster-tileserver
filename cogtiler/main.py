@@ -26,6 +26,7 @@ app.add_middleware(
     allow_methods=["GET"]
 )
 
+# TODO: move the bucket to the query
 bucket: Final = config('OBJECT_STORE_BUCKET')
 
 
