@@ -26,6 +26,11 @@ app.add_middleware(
     allow_methods=["GET"]
 )
 
+@app.get('/')
+def index():
+    return 200
+
+
 @app.get('/{z}/{x}/{y}')
 def syncronous_xyz(z: int, x: int, y: int, path: str):
     """ Not sure what's best. Do we make this entire function syncronous? Or

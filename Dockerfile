@@ -1,8 +1,7 @@
-# When building in openshift, you can reference the image in openshift:
-# FROM image-registry.openshift-image-registry.svc:5000/e1e498-tools/uvicorn-gunicorn-fastapi:python3.9
-#
-# When building local, you can reference the docker image.
-FROM tiangolo/uvicorn-gunicorn-fastapi:python3.9
+# As per
+# https://github.com/tiangolo/uvicorn-gunicorn-docker#-warning-you-probably-dont-need-this-docker-image
+# we build a docker image from scratch
+FROM python:3.10-bullseye
 
 ARG USERNAME=worker
 ARG USER_UID=1000
@@ -13,6 +12,7 @@ RUN apt-get update --fix-missing && apt-get -y install libgdal-dev
 RUN groupadd --gid $USER_GID $USERNAME \
     && useradd --uid $USER_UID --gid $USER_GID -m $USERNAME
 
+RUN mkdir /app
 RUN chown worker /app
 USER worker
 ENV PATH="/home/worker/.local/bin:${PATH}"
@@ -35,3 +35,5 @@ RUN poetry run python -m pip install pygdal==3.2.2.10
 COPY --chown=worker:worker ./cogtiler ./cogtiler
 
 EXPOSE 7800
+# https://www.uvicorn.org/deployment/#gunicorn
+CMD ["poetry", "run", "gunicorn", "-w", "4", "-k", "uvicorn.workers.UvicornWorker", "cogtiler.main:app", "--bind=0.0.0.0:7800"]

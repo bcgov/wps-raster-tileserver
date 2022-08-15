@@ -79,7 +79,7 @@ objects:
                   valueFrom:
                     configMapKeyRef:
                       name: ${GLOBAL_NAME}
-                      key: env.keycloak-public-key
+                      key: env.origins
                 - name: AWS_VIRTUAL_HOSTING
                   value: FALSE
                 - name: AWS_S3_ENDPOINT
