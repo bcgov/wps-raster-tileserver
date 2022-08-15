@@ -1,0 +1,155 @@
+apiVersion: template.openshift.io/v1
+kind: Template
+metadata:
+  name: tileserv
+parameters:
+  - name: RASTER_TILESERV_IMAGE_TAG
+    value: "latest"
+  - name: IMAGE_REGISTRY
+    value: image-registry.apps.silver.devops.gov.bc.ca
+  - name: IMAGE_NAMESPACE
+    value: e1e498-tools
+  - name: HOST
+    value: wps-dev-raster-tileserv.apps.silver.devops.gov.bc.ca
+  - name: GLOBAL_NAME
+    description: Name of global Module
+    value: wps-global
+
+objects:
+  # pgtileserv: 7800
+  # varnish: 8080
+  # outside: 80
+  - apiVersion: v1
+    kind: DeploymentConfig
+    metadata:
+      labels:
+        app: raster_tileserv
+      name: raster_tileserv
+    spec:
+      replicas: 2
+      selector:
+        app: raster_tileserv
+      strategy:
+        type: Rolling
+      template:
+        metadata:
+          labels:
+            app: raster_tileserv
+            name: raster_tileserv
+        spec:
+          containers:
+            - name: nginx
+              image: ${IMAGE_REGISTRY}/${IMAGE_NAMESPACE}/nginx-raster-tilecache
+              imagePullPolicy: Always
+              readinessProbe:
+                failureThreshold: 3
+                initialDelaySeconds: 10
+                periodSeconds: 10
+                successThreshold: 1
+                httpGet:
+                  path: /health
+                  port: 8080
+                timeoutSeconds: 1
+              livenessProbe:
+                failureThreshold: 3
+                initialDelaySeconds: 10
+                periodSeconds: 10
+                successThreshold: 1
+                httpGet:
+                  path: /health
+                  port: 8080
+                timeoutSeconds: 1
+              ports:
+                - containerPort: 8080
+                  protocol: TCP
+              resources:
+                requests:
+                  cpu: 100m
+                  memory: 128Mi
+                limits:
+                  cpu: 200m
+                  memory: 256Mi
+            - name: raster_tileserv
+              image: ${IMAGE_REGISTRY}/${IMAGE_NAMESPACE}/raster_tileserv:${RASTER_TILESERV_IMAGE_TAG}
+              ports:
+                - containerPort: 7800
+                  protocol: TCP
+              env:
+                - name: ORIGINS
+                  valueFrom:
+                    configMapKeyRef:
+                      name: ${GLOBAL_NAME}
+                      key: env.keycloak-public-key
+                - name: AWS_VIRTUAL_HOSTING
+                  value: FALSE
+                - name: AWS_S3_ENDPOINT
+                  valueFrom:
+                    secretKeyRef:
+                      name: ${GLOBAL_NAME}
+                      key: object-store-server
+                - name: AWS_ACCESS_KEY_ID
+                  valueFrom:
+                    secretKeyRef:
+                      name: ${GLOBAL_NAME}
+                      key: object-store-user-id
+                - name: AWS_SECRET_ACCESS_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: ${GLOBAL_NAME}
+                      key: object-store-secret
+              livenessProbe:
+                failureThreshold: 3
+                initialDelaySeconds: 5
+                periodSeconds: 30
+                successThreshold: 1
+                tcpSocket:
+                  port: 7800
+                timeoutSeconds: 5
+              readinessProbe:
+                httpGet:
+                  path: /
+                  port: 7800
+                failureThreshold: 3
+                initialDelaySeconds: 10
+                periodSeconds: 30
+                successThreshold: 1
+                timeoutSeconds: 5
+              resources:
+                requests:
+                  cpu: 100m
+                  memory: 256Mi
+                limits:
+                  cpu: 200m
+                  memory: 512Mi
+  - apiVersion: v1
+    kind: Service
+    metadata:
+      name: raster_tileserv
+      labels:
+        app: raster_tileserv
+        name: raster_tileserv
+    spec:
+      ports:
+        - name: 8080-tcp
+          protocol: TCP
+          port: 80
+          targetPort: 8080
+      selector:
+        name: raster_tileserv
+  - apiVersion: route.openshift.io/v1
+    kind: Route
+    metadata:
+      name: raster_tileserv
+      labels:
+        app: raster_tileserv
+        name: raster_tileserv
+    spec:
+      host: ${HOST}
+      port:
+        targetPort: 8080-tcp
+      to:
+        kind: Service
+        name: raster_tileserv
+      tls:
+        termination: edge
+        insecureEdgeTerminationPolicy: Redirect

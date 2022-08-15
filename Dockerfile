@@ -34,5 +34,4 @@ RUN poetry run python -m pip install pygdal==3.2.2.10
 # Copy the app.
 COPY --chown=worker:worker ./cogtiler ./cogtiler
 
-# The fastapi docker image defaults to port 80, but openshift doesn't allow non-root users port 80.
-EXPOSE 8080
+EXPOSE 7800
