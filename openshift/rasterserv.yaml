@@ -66,10 +66,10 @@ objects:
               resources:
                 requests:
                   cpu: 50m
-                  memory: 256Mi
+                  memory: 128Mi
                 limits:
-                  cpu: 200m
-                  memory: 512Mi
+                  cpu: 50m
+                  memory: 256Mi
             - name: raster-tileserver
               image: ${IMAGE_REGISTRY}/${IMAGE_NAMESPACE}/wps-raster-tileserver:${RASTER_TILESERV_IMAGE_TAG}
               ports:
@@ -112,7 +112,7 @@ objects:
                   port: 7800
                 failureThreshold: 3
                 initialDelaySeconds: 10
-                periodSeconds: 30
+                periodSeconds: 20
                 successThreshold: 1
                 timeoutSeconds: 5
               resources:
@@ -120,7 +120,8 @@ objects:
                   cpu: 50m
                   memory: 128Mi
                 limits:
-                  cpu: 50m
+                  # Limit of 50 is too low. The worker times out starting up.
+                  cpu: 100m
                   memory: 128Mi
   - apiVersion: v1
     kind: Service
