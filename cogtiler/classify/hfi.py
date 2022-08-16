@@ -1,4 +1,8 @@
+from time import perf_counter
+import logging
 import numpy as np
+
+logger = logging.getLogger("gunicorn.error")
 
 def lookup(value):
     """ Take an HFI value as input, and output an RGBA tuple
@@ -35,6 +39,7 @@ def classify(data):
     NOTE: This is probably a very slow way of doing it - there shouldn't be a way of doing
     this without enumerating. I'm just not a numpy expert.
     """
+    start = perf_counter()
     r, g, b = 0, 1, 2
     rgb = np.empty((3, data.shape[1], data.shape[2]), np.uint8)
     mask = np.empty(data.shape[1:], np.uint8)
@@ -42,4 +47,7 @@ def classify(data):
         for y, row in enumerate(band):
             for x, col in enumerate(row):
                 rgb[r][y][x], rgb[g][y][x], rgb[b][y][x], mask[y][x] = lookup(col)
+    end = perf_counter()
+    delta = end - start
+    logger.info('hfi classify took %s seconds', delta)
     return rgb, mask

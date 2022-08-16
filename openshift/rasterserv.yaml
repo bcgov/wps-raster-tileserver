@@ -26,8 +26,8 @@ objects:
         app: raster-tileserver
       name: raster-tileserver
     spec:
-      # TODO: use some kind of smart autoscaling
-      replicas: 5
+      # TODO: use some kind of smart autoscaling?
+      replicas: 20
       selector:
         app: raster-tileserver
       strategy:
@@ -98,10 +98,30 @@ objects:
                     secretKeyRef:
                       name: ${GLOBAL_NAME}
                       key: object-store-secret
+                - name: REDIS_HOST
+                  valueFrom:
+                    configMapKeyRef:
+                      name: ${GLOBAL_NAME}
+                      key: env.redis-host
+                - name: REDIS_PORT
+                  valueFrom:
+                    configMapKeyRef:
+                      name: ${GLOBAL_NAME}
+                      key: env.redis-port
+                - name: REDIS_USE
+                  valueFrom:
+                    configMapKeyRef:
+                      name: ${GLOBAL_NAME}
+                      key: env.redis-use
+                - name: REDIS_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: wps-redis
+                      key: database-password
               livenessProbe:
                 failureThreshold: 3
                 initialDelaySeconds: 5
-                periodSeconds: 30
+                periodSeconds: 20
                 successThreshold: 1
                 tcpSocket:
                   port: 7800
@@ -121,8 +141,11 @@ objects:
                   memory: 128Mi
                 limits:
                   # Limit of 50 is too low. The worker times out starting up.
-                  cpu: 100m
-                  memory: 128Mi
+                  # Limit of 100 seems too slow?
+                  cpu: 200m
+                  # Limit of 128 seems to cause OOM?
+                  # Limit of 256 seems to cause not available?
+                  memory: 512Mi
   - apiVersion: v1
     kind: Service
     metadata:

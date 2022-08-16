@@ -13,7 +13,7 @@ run:
 	${call run-api,$(POETRY_RUN)}
 
 run-gunicorn:
-	poetry run gunicorn -w 1 -k uvicorn.workers.UvicornWorker --threads 32 --bind=0.0.0.0:8090 cogtiler.main:app
+	poetry run gunicorn -w 2 -k uvicorn.workers.UvicornWorker --bind=0.0.0.0:8090 cogtiler.main:app
 
 run-uvicorn:
 	poetry run uvicorn cogtiler.main:app --host 0.0.0.0 --workers 1 --port 8090

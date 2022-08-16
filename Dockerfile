@@ -46,4 +46,4 @@ EXPOSE 7800
 # https://www.uvicorn.org/deployment/#gunicorn
 # We need to configure openshift to handle load. Using anything more than 1 worker, doesn't really result in any performance
 # increase in openshift. We need to run serverless or autoscale or something.
-CMD ["poetry", "run", "gunicorn", "cogtiler.main:app", "--workers", "1", "--worker-class", "uvicorn.workers.UvicornWorker", "--bind=0.0.0.0:7800"]
+CMD ["poetry", "run", "gunicorn", "cogtiler.main:app", "--keep-alive", "65", "--workers", "2", "--worker-class", "uvicorn.workers.UvicornWorker", "--bind=0.0.0.0:7800"]

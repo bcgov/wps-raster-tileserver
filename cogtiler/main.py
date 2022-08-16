@@ -7,6 +7,7 @@ export AWS_S3_ENDPOINT = "some.end.point"
 export AWS_ACCESS_KEY_ID = "someaccesskey"
 export AWS_SECRET_ACCESS_KEY = "somesecret"
 """
+import logging
 from starlette.concurrency import run_in_threadpool
 from fastapi import FastAPI, Response
 from rasterio.errors import RasterioIOError
@@ -15,11 +16,10 @@ from rio_tiler.io import COGReader
 from rio_tiler.errors import TileOutsideBounds
 from rio_tiler.utils import render
 from decouple import config
-from cogtiler.util import configure_logging
 from cogtiler.routers import v001
 from cogtiler.classify import ftl, hfi
 
-configure_logging()
+logger = logging.getLogger("gunicorn.error")
 
 app = FastAPI()
 
@@ -32,8 +32,13 @@ app.add_middleware(
 app.include_router(v001.router, tags=["v0.0.1"])
 
 @app.get('/')
-def index():
-    return 200
+def index() -> Response:
+    return Response(status_code=200)
+
+
+@app.get('/health')
+def index() -> Response:
+    return Response(status_code=200)
 
 
 @app.get('/{z}/{x}/{y}')
