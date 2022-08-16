@@ -38,6 +38,7 @@ def classify(data):
 
     NOTE: This is probably a very slow way of doing it - there shouldn't be a way of doing
     this without enumerating. I'm just not a numpy expert.
+    see: https://numpy.org/doc/stable/reference/generated/numpy.take.html
     """
     start = perf_counter()
     r, g, b = 0, 1, 2
