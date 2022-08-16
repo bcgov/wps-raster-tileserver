@@ -26,8 +26,9 @@ app.add_middleware(
     allow_methods=["GET"]
 )
 
-# TODO: move the bucket to the query
-bucket: Final = config('OBJECT_STORE_BUCKET')
+@app.get('/')
+def index():
+    return 200
 
 
 @app.get('/{z}/{x}/{y}')
@@ -35,7 +36,7 @@ def syncronous_xyz(z: int, x: int, y: int, path: str):
     """ Not sure what's best. Do we make this entire function syncronous? Or
     do we put run each blocking call in the threadpool?
     """
-    s3_url = f's3://{bucket}/{path}'
+    s3_url = f's3://{path}'
     with COGReader(s3_url) as image:
         try:
             img = image.tile(x, y, z)
@@ -59,7 +60,7 @@ def syncronous_xyz(z: int, x: int, y: int, path: str):
 
 @app.get('/value/{band}/{lat}/{lon}')
 async def value(band: int, lat: float, lon: float, path: str) -> Response:
-    s3_url = f's3://{bucket}/{path}'
+    s3_url = f's3://{path}'
     try:
         with await run_in_threadpool(COGReader, s3_url) as image:
             point = await run_in_threadpool(image.point, lon, lat, indexes=band)
@@ -83,7 +84,8 @@ async def xyz(z: int, x: int, y: int, path: str) -> Response:
     gdal_translate ftl_2018.tif ftl_2018_cloudoptimized.tif -co TILED=YES -co COMPRESS=LZW -co COPY_SRC_OVERVIEWS=YES
     ```
     """
-    s3_url = f's3://{bucket}/{path}'
+    s3_url = f's3://{path}'
+    print(f'/ftl/{z}/{x}/{y}?path={path} ; s3_url: {s3_url}')
     try:
         with await run_in_threadpool(COGReader, s3_url) as image:
             try:
@@ -106,9 +108,7 @@ async def xyz(z: int, x: int, y: int, path: str) -> Response:
     response = Response(content=rendered, media_type="image/png")
     # cache it for a week - we probably only need to cache for a day or two, but this is on
     # the client, so we don't care.
-    # response.headers["Cache-Control"] = "max-age=604800"
-    # don't cache while we test this.
-    response.headers["Cache-Control"] = "max-age=0"
+    response.headers["Cache-Control"] = "max-age=604800"
     return response
 
 
@@ -118,7 +118,8 @@ async def xyz(z: int, x: int, y: int, path: str) -> Response:
     do we put run each blocking call in the threadpool?
     TODO: this is really a HFI specific tiler - because of the classification!
     """
-    s3_url = f's3://{bucket}/{path}'
+    s3_url = f's3://{path}'
+    print(f'/tile/{z}/{x}/{y}?path={path} ; s3_url: {s3_url}')
     try:
         with await run_in_threadpool(COGReader, s3_url) as image:
             try:

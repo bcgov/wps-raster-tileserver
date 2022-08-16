@@ -1,0 +1,13 @@
+services:
+  server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./cogtiler:/app/cogtiler:delegated
+    command: poetry run uvicorn cogtiler.main:app --host 0.0.0.0 --reload --port 7800
+    env_file:
+      - .env
+    ports:
+      # You're probably running the wps api on port 8080, so map to 8090
+      - "8090:7800"
