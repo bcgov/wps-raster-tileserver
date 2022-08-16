@@ -44,8 +44,6 @@ USER 1001
 
 EXPOSE 7800
 # https://www.uvicorn.org/deployment/#gunicorn
-# Our process spends a lot of time waiting - so we pump up the worker count pretty high.
-# CMD ["poetry", "run", "gunicorn", "cogtiler.main:app", "--workers", "1", "--threads", "8", "--timeout", "60", "--worker-class", "uvicorn.workers.UvicornWorker", "--bind=0.0.0.0:7800"]
+# We need to configure openshift to handle load. Using anything more than 1 worker, doesn't really result in any performance
+# increase in openshift. We need to run serverless or autoscale or something.
 CMD ["poetry", "run", "gunicorn", "cogtiler.main:app", "--workers", "1", "--worker-class", "uvicorn.workers.UvicornWorker", "--bind=0.0.0.0:7800"]
-
-# CMD ["poetry", "run", "uvicorn", "cogtiler.main:app", "--host", "0.0.0.0", "--workers", "4", "--port", "7800"]
