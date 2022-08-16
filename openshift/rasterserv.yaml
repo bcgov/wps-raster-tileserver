@@ -27,7 +27,7 @@ objects:
       name: raster-tileserver
     spec:
       # TODO: use some kind of smart autoscaling
-      replicas: 20
+      replicas: 30
       selector:
         app: raster-tileserver
       strategy:
