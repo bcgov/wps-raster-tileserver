@@ -20,7 +20,7 @@ cache_control = config('CACHE-CONTROL', 'max-age=604800')
 cache_expiry_seconds = 604800  # 10,080 minutes, 168 hours, 7 days
 
 @router.get('/tile/{z}/{x}/{y}')
-def tile_xyz(z: int, x: int, y: int, path: str, source: str) -> Response:
+def tile_xyz(z: int, x: int, y: int, path: str, source: str, filter: str = None) -> Response:
     """
     Prepare your images:
     ```bash
@@ -31,7 +31,7 @@ def tile_xyz(z: int, x: int, y: int, path: str, source: str) -> Response:
     """
     start = perf_counter()
     s3_url = f's3://{path}'
-    key = f'/tile/{z}/{x}/{y}?path={path}&source={source}'
+    key = f'/tile/{z}/{x}/{y}?path={path}&source={source}&filter={filter}'
     cache = create_redis()
     logger.info('%s ; s3_url: %s', key, s3_url)
     try:
@@ -55,7 +55,7 @@ def tile_xyz(z: int, x: int, y: int, path: str, source: str) -> Response:
                 response.headers["Cache-Control"] = cache_control
                 return response
             if source == 'ftl':
-                data, mask = ftl.classify(img.data)
+                data, mask = ftl.classify(img.data, filter)
             elif source == 'hfi':
                 data, mask = hfi.classify(img.data)
     except RasterioIOError:

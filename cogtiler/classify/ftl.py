@@ -5,9 +5,20 @@ import numpy as np
 logger = logging.getLogger("gunicorn.error")
 
 unknown = (0xff, 0x00, 0x00, 0xff)
+mask_color = (0x0, 0x0, 0x0, 0x0)
+m1_m2 = (239,89,17,0xff)
+
+def prepare_m1m2_lookup_table():
+    table = {
+        14: m1_m2
+    }
+    # 500 indicates it's m1/m2 - the last two digits represent percentage conifer
+    for i in range(500, 600):
+        table[i] = m1_m2
+    return table
 
 def prepare_lookup_table():
-    mask_color = (0x0, 0x0, 0x0, 0x0)
+    
     non_fuel = mask_color
     c1 = (48,18,59,0xff)
     c2 = (65,67,167,0xff)
@@ -20,8 +31,7 @@ def prepare_lookup_table():
     s1 = (187,245,52,0xff)
     s2 = (226,220,56,0xff)
     s3 = (251,185,56,0xff)
-    o1a = (253,139,38,0xff)
-    m1_m2 = (239,89,17,0xff)
+    o1a = (253,139,38,0xff)    
     table = {
         -10000: non_fuel,
         1: c1,
@@ -47,14 +57,18 @@ def prepare_lookup_table():
     return table
 
 lookup_table = prepare_lookup_table()
+m1m2_lookup = prepare_m1m2_lookup_table()
 
-def lookup(value):
+def lookup(value, filter):
     """
-    TODO: We need FTL lookup table! What are the types, and what colours do they match to?
+    not a particularly good filter implemntation, just want to show it's possible.
     """
-    return lookup_table.get(int(value), unknown)
+    if filter == 'm1/m2':
+        return m1m2_lookup.get(int(value), mask_color)
+    else:
+        return lookup_table.get(int(value), unknown)
 
-def classify(data):
+def classify(data, filter=None):
     """
     Given a numpy array, with a single band, classify the values into RGB and mask tuples.
 
@@ -69,7 +83,7 @@ def classify(data):
     for band in data:
         for y, row in enumerate(band):
             for x, col in enumerate(row):
-                rgb[r][y][x], rgb[g][y][x], rgb[b][y][x], mask[y][x] = lookup(col)
+                rgb[r][y][x], rgb[g][y][x], rgb[b][y][x], mask[y][x] = lookup(col, filter)
     end = perf_counter()
     delta = end - start
     logger.info('ftl classify took %s seconds', delta)
