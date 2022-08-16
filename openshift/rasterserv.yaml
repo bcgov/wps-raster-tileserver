@@ -27,7 +27,7 @@ objects:
       name: raster-tileserver
     spec:
       # TODO: use some kind of smart autoscaling
-      replicas: 15
+      replicas: 20
       selector:
         app: raster-tileserver
       strategy:
@@ -118,10 +118,10 @@ objects:
               resources:
                 requests:
                   cpu: 50m
-                  memory: 256Mi
+                  memory: 128Mi
                 limits:
-                  cpu: 200m
-                  memory: 512Mi
+                  cpu: 50m
+                  memory: 128Mi
   - apiVersion: v1
     kind: Service
     metadata:
