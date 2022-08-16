@@ -17,6 +17,10 @@ RUN chown worker /app
 USER worker
 ENV PATH="/home/worker/.local/bin:${PATH}"
 
+# RUN mkdir /home/worker/.cache/pypoetry
+# RUN chown worker /home/worker/.cache/pypoetry
+ENV POETRY_CACHE_DIR="/home/worker/.cache/pypoetry"
+
 # Update pip.
 RUN python -m pip install --upgrade pip
 
@@ -34,6 +38,14 @@ RUN poetry run python -m pip install pygdal==3.2.2.10
 # Copy the app.
 COPY --chown=worker:worker ./cogtiler ./cogtiler
 
+# Openshift runs with a random non-root user, so switching our user to 1001 allows us
+# to test locally with similar conditions to what we may find in openshift.
+USER 1001
+
 EXPOSE 7800
 # https://www.uvicorn.org/deployment/#gunicorn
-CMD ["poetry", "run", "gunicorn", "-w", "4", "-k", "uvicorn.workers.UvicornWorker", "cogtiler.main:app", "--bind=0.0.0.0:7800"]
+# Our process spends a lot of time waiting - so we pump up the worker count pretty high.
+# CMD ["poetry", "run", "gunicorn", "cogtiler.main:app", "--workers", "1", "--threads", "8", "--timeout", "60", "--worker-class", "uvicorn.workers.UvicornWorker", "--bind=0.0.0.0:7800"]
+CMD ["poetry", "run", "gunicorn", "cogtiler.main:app", "--workers", "1", "--worker-class", "uvicorn.workers.UvicornWorker", "--bind=0.0.0.0:7800"]
+
+# CMD ["poetry", "run", "uvicorn", "cogtiler.main:app", "--host", "0.0.0.0", "--workers", "4", "--port", "7800"]

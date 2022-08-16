@@ -38,6 +38,8 @@ oc new-build nginx~[git hub repository] --context-dir=[folder with nginx config]
 ### Deploy
 
 ```bash
-# deploy pg_tileserv
+# test deploy
+oc -n e1e498-dev process -f rasterserv.yaml | oc -n e1e498-dev apply --dry-run=client -f -
+# deploy
 oc -n e1e498-dev process -f rasterserv.yaml | oc -n e1e498-dev apply -f -
 ```

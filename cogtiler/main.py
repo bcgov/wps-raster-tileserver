@@ -108,9 +108,7 @@ async def xyz(z: int, x: int, y: int, path: str) -> Response:
     response = Response(content=rendered, media_type="image/png")
     # cache it for a week - we probably only need to cache for a day or two, but this is on
     # the client, so we don't care.
-    # response.headers["Cache-Control"] = "max-age=604800"
-    # don't cache while we test this.
-    response.headers["Cache-Control"] = "max-age=0"
+    response.headers["Cache-Control"] = "max-age=604800"
     return response
 
 
@@ -121,6 +119,7 @@ async def xyz(z: int, x: int, y: int, path: str) -> Response:
     TODO: this is really a HFI specific tiler - because of the classification!
     """
     s3_url = f's3://{path}'
+    print(f'/tile/{z}/{x}/{y}?path={path} ; s3_url: {s3_url}')
     try:
         with await run_in_threadpool(COGReader, s3_url) as image:
             try:

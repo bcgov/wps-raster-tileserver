@@ -1,7 +1,7 @@
 apiVersion: template.openshift.io/v1
 kind: Template
 metadata:
-  name: tileserv
+  name: raster-tileserver
 parameters:
   - name: RASTER_TILESERV_IMAGE_TAG
     value: "latest"
@@ -10,7 +10,7 @@ parameters:
   - name: IMAGE_NAMESPACE
     value: e1e498-tools
   - name: HOST
-    value: wps-dev-raster-tileserv.apps.silver.devops.gov.bc.ca
+    value: wps-dev-raster-tileserver.apps.silver.devops.gov.bc.ca
   - name: GLOBAL_NAME
     description: Name of global Module
     value: wps-global
@@ -23,19 +23,20 @@ objects:
     kind: DeploymentConfig
     metadata:
       labels:
-        app: raster_tileserv
-      name: raster_tileserv
+        app: raster-tileserver
+      name: raster-tileserver
     spec:
-      replicas: 2
+      # TODO: use some kind of smart autoscaling
+      replicas: 15
       selector:
-        app: raster_tileserv
+        app: raster-tileserver
       strategy:
         type: Rolling
       template:
         metadata:
           labels:
-            app: raster_tileserv
-            name: raster_tileserv
+            app: raster-tileserver
+            name: raster-tileserver
         spec:
           containers:
             - name: nginx
@@ -64,13 +65,13 @@ objects:
                   protocol: TCP
               resources:
                 requests:
-                  cpu: 100m
-                  memory: 128Mi
+                  cpu: 50m
+                  memory: 256Mi
                 limits:
                   cpu: 200m
-                  memory: 256Mi
-            - name: raster_tileserv
-              image: ${IMAGE_REGISTRY}/${IMAGE_NAMESPACE}/raster_tileserv:${RASTER_TILESERV_IMAGE_TAG}
+                  memory: 512Mi
+            - name: raster-tileserver
+              image: ${IMAGE_REGISTRY}/${IMAGE_NAMESPACE}/wps-raster-tileserver:${RASTER_TILESERV_IMAGE_TAG}
               ports:
                 - containerPort: 7800
                   protocol: TCP
@@ -81,7 +82,7 @@ objects:
                       name: ${GLOBAL_NAME}
                       key: env.origins
                 - name: AWS_VIRTUAL_HOSTING
-                  value: FALSE
+                  value: "FALSE"
                 - name: AWS_S3_ENDPOINT
                   valueFrom:
                     secretKeyRef:
@@ -116,7 +117,7 @@ objects:
                 timeoutSeconds: 5
               resources:
                 requests:
-                  cpu: 100m
+                  cpu: 50m
                   memory: 256Mi
                 limits:
                   cpu: 200m
@@ -124,10 +125,10 @@ objects:
   - apiVersion: v1
     kind: Service
     metadata:
-      name: raster_tileserv
+      name: raster-tileserver
       labels:
-        app: raster_tileserv
-        name: raster_tileserv
+        app: raster-tileserver
+        name: raster-tileserver
     spec:
       ports:
         - name: 8080-tcp
@@ -135,21 +136,25 @@ objects:
           port: 80
           targetPort: 8080
       selector:
-        name: raster_tileserv
+        name: raster-tileserver
   - apiVersion: route.openshift.io/v1
     kind: Route
     metadata:
-      name: raster_tileserv
+      name: raster-tileserver
       labels:
-        app: raster_tileserv
-        name: raster_tileserv
+        app: raster-tileserver
+        name: raster-tileserver
+      annotations:
+        # Use roundrobin load balancing strategy
+        haproxy.router.openshift.io/balance: roundrobin
+        haproxy.router.openshift.io/disable_cookies: "true"
     spec:
       host: ${HOST}
       port:
         targetPort: 8080-tcp
       to:
         kind: Service
-        name: raster_tileserv
+        name: raster-tileserver
       tls:
         termination: edge
         insecureEdgeTerminationPolicy: Redirect

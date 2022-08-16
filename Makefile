@@ -12,6 +12,12 @@ endef
 run:
 	${call run-api,$(POETRY_RUN)}
 
+run-gunicorn:
+	poetry run gunicorn -w 1 -k uvicorn.workers.UvicornWorker --threads 32 --bind=0.0.0.0:8090 cogtiler.main:app
+
+run-uvicorn:
+	poetry run uvicorn cogtiler.main:app --host 0.0.0.0 --workers 1 --port 8090
+
 notebook:
 	# Run jupyter notebooks.
 	POSTGRES_HOST=localhost PYTHONPATH=$(shell pwd) JUPYTER_PATH=$(shell pwd) poetry run jupyter notebook --ip 0.0.0.0
