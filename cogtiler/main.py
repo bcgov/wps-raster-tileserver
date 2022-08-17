@@ -7,7 +7,6 @@ export AWS_S3_ENDPOINT = "some.end.point"
 export AWS_ACCESS_KEY_ID = "someaccesskey"
 export AWS_SECRET_ACCESS_KEY = "somesecret"
 """
-import logging
 from starlette.concurrency import run_in_threadpool
 from fastapi import FastAPI, Response
 from rasterio.errors import RasterioIOError
@@ -18,8 +17,9 @@ from rio_tiler.utils import render
 from decouple import config
 from cogtiler.routers import v001
 from cogtiler.classify import ftl, hfi
+from cogtiler import utils
 
-logger = logging.getLogger("gunicorn.error")
+logger = utils.getLogger()
 
 app = FastAPI()
 

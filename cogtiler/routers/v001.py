@@ -1,16 +1,16 @@
-import logging
 from time import perf_counter
 from fastapi import APIRouter
 from fastapi import Response
-from rio_tiler.io import COGReader
 from rio_tiler.errors import TileOutsideBounds
 from rasterio.errors import RasterioIOError
 from rio_tiler.utils import render
+from rio_tiler.io import COGReader
 from decouple import config
 from cogtiler.classify import ftl, hfi
 from cogtiler.redis import create_redis
+from cogtiler import utils
 
-logger = logging.getLogger("gunicorn.error")
+logger = utils.getLogger()
 
 router = APIRouter(
     prefix="/v0.0.1"
@@ -47,23 +47,24 @@ def tile_xyz(z: int, x: int, y: int, path: str, source: str, filter: str = None)
     else:
         logger.info('redis cache miss %s', key)
     try:
-        with COGReader(s3_url) as image:
+        with COGReader(s3_url) as cog:
             try:
-                img = image.tile(x, y, z)
+                img = cog.tile(x, y, z)
             except TileOutsideBounds:
                 response = Response(status_code=404)
                 response.headers["Cache-Control"] = cache_control
                 return response
-            if source == 'ftl':
-                data, mask = ftl.classify(img.data, filter)
-            elif source == 'hfi':
-                data, mask = hfi.classify(img.data)
+        if source == 'ftl':
+            data, mask = ftl.classify(img.data, filter)
+        elif source == 'hfi':
+            data, mask = hfi.classify(img.data)
     except RasterioIOError:
         # If the file is not found, return 404
-        response = Response(status_code=404)
-        return response
+        logger.error(e, exc_info=True)
+        return Response(status_code=500)
     except Exception as e:
         logger.error(e, exc_info=True)
+        return Response(status_code=500)
     # TODO: This part (`render`) gives an error:
     # "ERROR 4: `/vsimem/xxxx.tif' not recognized as a supported file format."
     # We can replace this with a different method. It's just taking an array of rgba values
@@ -87,10 +88,10 @@ def tile_xyz(z: int, x: int, y: int, path: str, source: str, filter: str = None)
 def value(band: int, lat: float, lon: float, path: str) -> Response:
     s3_url = f's3://{path}'
     try:
-        with COGReader(s3_url) as image:
-            point = image.point(lon, lat, indexes=band)
-            # TODO: put in nice json response. This could even be a nice geojson thing
-            return point[band - 1]
+        with COGReader(s3_url) as cog:
+            point = cog.point(lon, lat, indexes=band)
+        # TODO: put in nice json response. This could even be a nice geojson thing
+        return point[band - 1]
     except RasterioIOError:
         # If the file is not found, return 404
         response = Response(status_code=404)

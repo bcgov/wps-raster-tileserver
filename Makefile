@@ -6,7 +6,7 @@ endif
 
 define run-api
 	# function to run api	
-	${1} uvicorn cogtiler.main:app --host 0.0.0.0 --reload --port 8090;
+	${1} uvicorn cogtiler.main:app --host 0.0.0.0 --reload --port 8090 --log-level debug;
 endef
 
 run:
