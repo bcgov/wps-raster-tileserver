@@ -6,8 +6,7 @@ from rasterio.errors import RasterioIOError
 from rio_tiler.utils import render
 from rio_tiler.io import COGReader
 from decouple import config
-from cogtiler.classify import ftl, hfi
-from cogtiler.redis import create_redis
+from cogtiler.classify import ftl, hfi, elevation, aspect, slope
 from cogtiler import utils
 
 logger = utils.getLogger()
@@ -32,7 +31,7 @@ def tile_xyz(z: int, x: int, y: int, path: str, source: str, filter: str = None)
     start = perf_counter()
     s3_url = f's3://{path}'
     key = f'/tile/{z}/{x}/{y}?path={path}&source={source}&filter={filter}'
-    cache = create_redis()
+    cache = utils.create_redis()
     logger.info('%s ; s3_url: %s', key, s3_url)
     try:
         cached_data = cache.get(key)
@@ -58,6 +57,12 @@ def tile_xyz(z: int, x: int, y: int, path: str, source: str, filter: str = None)
             data, mask = ftl.classify(img.data, filter)
         elif source == 'hfi':
             data, mask = hfi.classify(img.data)
+        elif source == 'elevation':
+            data, mask = elevation.classify(img.data)
+        elif source == 'slope':
+            data, mask = slope.classify(img.data)
+        elif source == 'aspect':
+            data, mask = aspect.classify(img.data)
     except RasterioIOError:
         # If the file is not found, return 404
         logger.error(e, exc_info=True)
