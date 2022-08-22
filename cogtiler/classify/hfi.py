@@ -1,8 +1,8 @@
 from time import perf_counter
-import logging
 import numpy as np
+from cogtiler import utils
 
-logger = logging.getLogger("gunicorn.error")
+logger = utils.getLogger()
 
 def lookup(value):
     """ Take an HFI value as input, and output an RGBA tuple
@@ -16,7 +16,7 @@ def lookup(value):
     """
     if value < 0:
         return 0, 0, 0, 0
-    if value >= 0 and value < 10:
+    elif value >= 0 and value < 10:
         return 0x01, 0x00, 0xfc, 0xff
     elif value >= 10 and value < 500:
         return 0x04, 0x81, 0xff, 0xff
