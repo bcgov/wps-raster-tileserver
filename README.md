@@ -28,11 +28,6 @@ docker login -u developer -p $(oc whoami -t) image-registry.apps.silver.devops.g
 
 # push it
 docker push image-registry.apps.silver.devops.gov.bc.ca/e1e498-tools/wps-raster-tileserver:latest
-
-# prepare nginx - creating a build configuration
-# note: for some reason specifying the tag for nginx will result in an image that doesn't support s2i
-oc new-build nginx~[git hub repository] --context-dir=[folder with nginx config] --name=[name of buildconfig and imagestream]
-# e.g.: oc -n e1e498-tools new-build nginx~https://github.com/bcgov/wps-raster-tileserver.git --context-dir=openshift --name=nginx-raster-tilecache
 ```
 
 ### Deploy

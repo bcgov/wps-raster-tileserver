@@ -1,0 +1,48 @@
+grid_value,export_value,descriptive_name,fuel_type,r,g,b,a
+1,1,Spruce-Lichen Woodland,C-1,209,255,115,255
+2,2,Boreal Spruce,C-2,34,102,51,255
+3,3,Mature Jack or Lodgepole Pine,C-3,131,199,149,255
+4,4,Immature Jack or Lodgepole Pine or densely stocked Ponderosa Pine or Douglas Fir,C-4,112,168,0,255
+5,5,Red and White Pine,C-5,223,184,230,255
+6,6,Conifer Plantation,C-6,172,102,237,255
+7,7,Ponderosa Pine or Douglas Fir,C-7,112,12,242,255
+8,8,Leafless or Green Aspen or Deciduous shrub,D-1/D-2,137,112,68,255
+9,9,Jack or Lodgepole Pine slash,S-1,251,190,185,255
+10,10,White Spruce or Balsam slash,S-2,247,104,161,255
+11,11,Coastal Cedar or Hemlock or Douglas Fir slash,S-3,174,1,126,255
+12,12,Matted Grass,O-1a,255,255,190,255
+14,14,M-1/M-2,M-1/M-2,255,211,127,255
+32,32,Standing Grass,O-1b,230,230,0,255
+40,40,Boreal Mixedwood - Leafless,M-1,255,211,127,255
+50,50,Boreal Mixed wood - Green,M-2,255,170,0,255
+81,81,Leafless Aspen,D-1,196,189,151,255
+82,82,Green Aspen (with BUI Thresholding),D-2,137,112,68,255
+90,90,Dead Balsam Fir Mixedwood,M-3/M-4,99,0,0,255
+99,99,Non-fuel,Non-fuel,156,156,156,0
+100,100,Interface,Non-fuel,156,156,156,0
+102,102,Water,Non-fuel,115,223,255,0
+103,103,Unknown,Non-fuel,0,0,0,0
+505,505,M-2 0-5% Conifer,M-1/M-2 (05 PC),255,211,127,255
+510,510,M-2 5-10% Conifer,M-1/M-2 (10 PC),255,211,127,255
+515,515,M-2 10-15% Conifer,M-1/M-2 (15 PC),255,211,127,255
+520,520,M-2 15-20% Conifer,M-1/M-2 (20 PC),255,211,127,255
+525,525,M-2 20-25% Conifer,M-1/M-2 (25 PC),255,211,127,255
+530,530,M-2 25-30% Conifer,M-1/M-2 (30 PC),255,211,127,255
+535,535,M-2 30-35% Conifer,M-1/M-2 (35 PC),255,211,127,255
+540,540,M-2 35-40% Conifer,M-1/M-2 (40 PC),255,211,127,255
+545,545,M-2 40-45% Conifer,M-1/M-2 (45 PC),255,211,127,255
+550,550,M-2 45-50% Conifer,M-1/M-2 (50 PC),255,211,127,255
+555,555,M-2 50-55% Conifer,M-1/M-2 (55 PC),255,211,127,255
+560,560,M-2 55-60% Conifer,M-1/M-2 (60 PC),255,211,127,255
+565,565,M-2 60-65% Conifer,M-1/M-2 (65 PC),255,211,127,255
+570,570,M-2 65-70% Conifer,M-1/M-2 (70 PC),255,211,127,255
+575,575,M-2 70-75% Conifer,M-1/M-2 (75 PC),255,211,127,255
+580,580,M-2 75-80% Conifer,M-1/M-2 (80 PC),255,211,127,255
+585,585,M-2 80-85% Conifer,M-1/M-2 (85 PC),255,211,127,255
+590,590,M-2 85-90% Conifer,M-1/M-2 (90 PC),255,211,127,255
+595,595,M-2 90-95% Conifer,M-1/M-2 (95 PC),255,211,127,255
+765,765,Dead Balsam Fir Mixedwood - Leafless (65% dead fir),M-3 (65 PDF),99,0,0,255
+865,865,Dead Balsam Fir Mixedwood - Green (65% dead fir),M-4 (65 PDF),170,0,0,255
+965,965,Dead Balsam Fir Mixedwood (65% Dead Fir),M-3/M-4 (65 PDF),99,0,0,255
+-10000,-10000,?,?,0,0,0,0
+65535,65535,?,?,0,0,0,0

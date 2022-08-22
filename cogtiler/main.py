@@ -7,7 +7,6 @@ export AWS_S3_ENDPOINT = "some.end.point"
 export AWS_ACCESS_KEY_ID = "someaccesskey"
 export AWS_SECRET_ACCESS_KEY = "somesecret"
 """
-from typing import Final
 from starlette.concurrency import run_in_threadpool
 from fastapi import FastAPI, Response
 from rasterio.errors import RasterioIOError
@@ -16,7 +15,11 @@ from rio_tiler.io import COGReader
 from rio_tiler.errors import TileOutsideBounds
 from rio_tiler.utils import render
 from decouple import config
-from cogtiler.util import classify, classify_ftl
+from cogtiler.routers import v001
+from cogtiler.classify import ftl, hfi
+from cogtiler import utils
+
+logger = utils.getLogger()
 
 app = FastAPI()
 
@@ -26,9 +29,16 @@ app.add_middleware(
     allow_methods=["GET"]
 )
 
+app.include_router(v001.router, tags=["v0.0.1"])
+
 @app.get('/')
-def index():
-    return 200
+def index() -> Response:
+    return Response(status_code=200)
+
+
+@app.get('/health')
+def index() -> Response:
+    return Response(status_code=200)
 
 
 @app.get('/{z}/{x}/{y}')
@@ -44,7 +54,7 @@ def syncronous_xyz(z: int, x: int, y: int, path: str):
             response = Response(status_code=404)
             response.headers["Cache-Control"] = "max-age=604800"
             return response
-        data, mask = classify(img.data)
+        data, mask = hfi.classify(img.data)
         del img
     # TODO: This part (`render`) gives an error:
     # "ERROR 4: `/vsimem/xxxx.tif' not recognized as a supported file format."
@@ -94,7 +104,7 @@ async def xyz(z: int, x: int, y: int, path: str) -> Response:
                 response = Response(status_code=404)
                 response.headers["Cache-Control"] = "max-age=604800"
                 return response
-            data, mask = classify_ftl(img.data)
+            data, mask = ftl.classify(img.data)
             del img
     except RasterioIOError:
         # If the file is not found, return 404
@@ -128,7 +138,7 @@ async def xyz(z: int, x: int, y: int, path: str) -> Response:
                 response = Response(status_code=404)
                 response.headers["Cache-Control"] = "max-age=604800"
                 return response
-            data, mask = classify(img.data)
+            data, mask = hfi.classify(img.data)
             del img
     except RasterioIOError:
         # If the file is not found, return 404
