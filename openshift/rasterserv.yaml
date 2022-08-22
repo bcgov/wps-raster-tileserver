@@ -16,9 +16,6 @@ parameters:
     value: wps-global
 
 objects:
-  # pgtileserv: 7800
-  # varnish: 8080
-  # outside: 80
   - apiVersion: v1
     kind: DeploymentConfig
     metadata:
@@ -39,37 +36,6 @@ objects:
             name: raster-tileserver
         spec:
           containers:
-            - name: nginx
-              image: ${IMAGE_REGISTRY}/${IMAGE_NAMESPACE}/nginx-raster-tilecache
-              imagePullPolicy: Always
-              readinessProbe:
-                failureThreshold: 3
-                initialDelaySeconds: 10
-                periodSeconds: 10
-                successThreshold: 1
-                httpGet:
-                  path: /health
-                  port: 8080
-                timeoutSeconds: 1
-              livenessProbe:
-                failureThreshold: 3
-                initialDelaySeconds: 10
-                periodSeconds: 10
-                successThreshold: 1
-                httpGet:
-                  path: /health
-                  port: 8080
-                timeoutSeconds: 1
-              ports:
-                - containerPort: 8080
-                  protocol: TCP
-              resources:
-                requests:
-                  cpu: 50m
-                  memory: 128Mi
-                limits:
-                  cpu: 50m
-                  memory: 256Mi
             - name: raster-tileserver
               image: ${IMAGE_REGISTRY}/${IMAGE_NAMESPACE}/wps-raster-tileserver:${RASTER_TILESERV_IMAGE_TAG}
               ports:
@@ -155,10 +121,10 @@ objects:
         name: raster-tileserver
     spec:
       ports:
-        - name: 8080-tcp
+        - name: 7800-tcp
           protocol: TCP
           port: 80
-          targetPort: 8080
+          targetPort: 7800
       selector:
         name: raster-tileserver
   - apiVersion: route.openshift.io/v1
@@ -175,7 +141,7 @@ objects:
     spec:
       host: ${HOST}
       port:
-        targetPort: 8080-tcp
+        targetPort: 7800-tcp
       to:
         kind: Service
         name: raster-tileserver

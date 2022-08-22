@@ -19,7 +19,7 @@ cache_control = config('CACHE-CONTROL', 'max-age=604800')
 cache_expiry_seconds = 604800  # 10,080 minutes, 168 hours, 7 days
 
 @router.get('/tile/{z}/{x}/{y}')
-def tile_xyz(z: int, x: int, y: int, path: str, source: str, filter: str = None) -> Response:
+def tile_xyz(z: int, x: int, y: int, path: str, source: str, filter: str = None, tilesize: int = 512) -> Response:
     """
     Prepare your images:
     ```bash
@@ -30,7 +30,7 @@ def tile_xyz(z: int, x: int, y: int, path: str, source: str, filter: str = None)
     """
     start = perf_counter()
     s3_url = f's3://{path}'
-    key = f'/tile/{z}/{x}/{y}?path={path}&source={source}&filter={filter}'
+    key = f'/tile/{z}/{x}/{y}?path={path}&source={source}&filter={filter}&tilesize={tilesize}'
     cache = utils.create_redis()
     logger.info('%s ; s3_url: %s', key, s3_url)
     try:
@@ -48,7 +48,7 @@ def tile_xyz(z: int, x: int, y: int, path: str, source: str, filter: str = None)
     try:
         with COGReader(s3_url) as cog:
             try:
-                img = cog.tile(x, y, z)
+                img = cog.tile(x, y, z, tilesize=tilesize)
             except TileOutsideBounds:
                 response = Response(status_code=404)
                 response.headers["Cache-Control"] = cache_control
@@ -63,7 +63,7 @@ def tile_xyz(z: int, x: int, y: int, path: str, source: str, filter: str = None)
             data, mask = slope.classify(img.data)
         elif source == 'aspect':
             data, mask = aspect.classify(img.data)
-    except RasterioIOError:
+    except RasterioIOError as e:
         # If the file is not found, return 404
         logger.error(e, exc_info=True)
         return Response(status_code=500)
